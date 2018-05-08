@@ -10,13 +10,10 @@ using System.Threading;
 using System.Drawing;
 using System.Linq;
 
-//nombre del proyecto 
-namespace SerialReceive
+namespace WindowsFormsApplication2
 {
-    public partial class PROYECTO_SERIAL : System.Windows.Forms.Form
+    public partial class tsaxmagu : Form
     {
-
-
         //Este es un list privado para que siempre tenga los valores sea cual sea la acción que se realice
         //O al menos en esta clase
         private List<Datos> datosDeTxt = new List<Datos>();
@@ -39,14 +36,10 @@ namespace SerialReceive
         //private string time; 
         //Inicio de la clase del diseño  
         private TimeSpan time = new System.TimeSpan();
-
-        public PROYECTO_SERIAL()
+        public tsaxmagu()
         {
-           
+            InitializeComponent();
         }
-       
-
-
         /// <summary>
         /// Esta función es para validar si entra o no en el rango de tiempo
         /// </summary>
@@ -97,7 +90,7 @@ namespace SerialReceive
                 for (int i = 0; i < 13 - (dato.Temp.Length + 1); i++)
                     espaciado = espaciado + " ";
 
-                sw.WriteLine("|" + espaciado + dato.Temp + " |" + espaciado + dato.Lum + "," + "|"+ dato.Mov+","+ "|" + dato.Fecha + "," + "|" + dato.Hora + "|");
+                sw.WriteLine("|" + espaciado + dato.Temp + " |" + espaciado + dato.Lum + "," + "|" + dato.Mov + "," + "|" + dato.Fecha + "," + "|" + dato.Hora + "|");
             }
             sw.WriteLine("-------------+-------------+-------------+-------------+-------------+-------------+");
 
@@ -116,7 +109,7 @@ namespace SerialReceive
 
             //El numero 10 es provisional
 
-            if (MandarDatos(aumentoTiempo))
+            if (MandarDatos(new TimeSpan(0, 1, 0)))
             {
                 try
                 {
@@ -131,25 +124,25 @@ namespace SerialReceive
                     //Se hace un array el cual se separa por la coma para eso funciona la herramienta split 
                     //(Puede ser cualquier parametro desde una palabra hasta caracteres especiales en un orden especifico)
                     string[] subStrings = accion.Split(',');
-
-                    mov = subStrings[0];
-                    temp = subStrings[4];
-                    lum = subStrings[5];
+                    temp = subStrings[0];
+                    lum = subStrings[1];
+                    mov = subStrings[2];
+                    
 
                     txtDatoRecibido.Text = accion;
                     spPuertoSerial.DiscardInBuffer();
 
                     Datos datosNuevos = new Datos();
-                    datosNuevos.Mov = mov;
-                    datosNuevos.Temp = temp;
+                      datosNuevos.Temp = temp;
                     datosNuevos.Lum = lum;
+                    datosNuevos.Mov = mov;
                     datosNuevos.Fecha = DateTime.Now.ToShortDateString();
                     datosNuevos.Hora = DateTime.Now.ToLongTimeString();
 
                     LeerDatos(datosNuevos);
                     //Este metodo ingresa datos al gridView y lo agrega, no se puede poner un objeto, se tiene que poner separado por comas
                     //Asi separamos el objeto actual en los elementos separados
-                    dataGridView1.Rows.Add(datosNuevos.Temp, datosNuevos.Lum,datosNuevos.Mov, datosNuevos.Fecha, datosNuevos.Hora);
+                    dataGridView1.Rows.Add(datosNuevos.Temp, datosNuevos.Lum, datosNuevos.Mov, datosNuevos.Fecha, datosNuevos.Hora);
                     //spPuertoSerial.DiscardOutBuffer();
 
                     //System.Diagnostics.Debug.WriteLine("1");
@@ -161,9 +154,6 @@ namespace SerialReceive
                 }
             }
         }
-
-
-
 
         //Metodo para estar guardando los datos 
         private void AccesoInterrupcion(string accion)
@@ -229,9 +219,46 @@ namespace SerialReceive
                 strBufferOut = "";
                 btnConectar.Enabled = false;
             }
+            /*--------------TERMINAN LOS METODOS*/
+
         }
 
-        /*
+        private void btnBuscar_Puertos_Click_1(object sender, EventArgs e)
+        {
+            // en un arreglo se guardarn los datos disponobles 
+            string[] PuertosDisponibles = SerialPort.GetPortNames();
+            cmbPuertos.Items.Clear();
+
+            foreach (string puerto in PuertosDisponibles)
+            {
+                // en el combo box puertos 
+                // se guardaran los puertos disponibles 
+                cmbPuertos.Items.Add(puerto);
+
+            }
+            //si el cmbPuertos es mayor que 0 se mostrará  el siguiente mensaje 
+            if (cmbPuertos.Items.Count > 0)
+            {
+                cmbPuertos.SelectedIndex = 0;
+                //-------------------------------Mensaje para seleccionar el puerto 
+                // Esto nos indica que el metodo para encontrar los seriales esta funcionando 
+                MessageBox.Show("Seleccionar el puerto");
+
+                btnConectar.Enabled = true;
+                //------------------------------------------------------------------------------
+            }
+            //si no se encuentra ningun puerto pasara al siguiente else 
+            else
+            {
+                MessageBox.Show("Ningun puerto seleccionado");
+                cmbPuertos.Items.Clear();
+                cmbPuertos.Text = "                       ";
+                strBufferIn = "";
+                strBufferOut = "";
+                btnConectar.Enabled = false;
+            }
+        }
+           /*
          *En el botón conectar le pasaremos los 
          * parametros que necesita para recibir los datos 
          * 
@@ -298,9 +325,8 @@ namespace SerialReceive
             {
                 MessageBox.Show(exc.Message.ToString());
             }
+        
         }
-
-        //*Metodo para recibir los datos del serial 
 
         private void spPuertoSerial_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
@@ -318,59 +344,32 @@ namespace SerialReceive
 
         }
 
-        private void lbListaDatos_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-        //
-        private void txtDatoRecibido_TextChanged(object sender, EventArgs e)
-        {
-
-
-        }
-
-        private void cmbPuertos_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-        //función para agregar el timer 
         private void tTime_Tick(object sender, EventArgs e)
         {
             try
             {
-                tTime.Enabled = true;
                 lblTiempo.Text = DateTime.Now.ToLongTimeString();
 
                 tTime.Start();
-                if ((fecha + aumentoTiempo).ToString("mm:ss") == DateTime.Now.ToString("mm:ss"))
+                if ((fecha + aumentoTiempo).ToString("mm") == DateTime.Now.ToString("mm"))
                 {
                     //spPuertoSerial.DiscardInBuffer();
                     //spPuertoSerial.DiscardOutBuffer();
                     spPuertoSerial.Write("1");
-                    //Thread.Sleep(10000);
+                    Thread.Sleep(1000);
+                    System.Diagnostics.Debug.WriteLine(strBufferOut);
+
                     spPuertoSerial.DiscardOutBuffer();
 
-
                 }
-
-
 
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine("Truena por el minuto" + ex);
             }
-
         }
-
-      
-
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
-
-        //Metodo para seleccionar donde guardar el archivo generado por el sistema 
+    
 
         private void btnArchivos_Click(object sender, EventArgs e)
         {
@@ -396,7 +395,6 @@ namespace SerialReceive
 
         }
 
-       
     }
 }
 
