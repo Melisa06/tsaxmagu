@@ -35,7 +35,7 @@ namespace WindowsFormsApplication2
         //Variable para asignar el tiempo 
         //private string time; 
         //Inicio de la clase del diseño  
-        private TimeSpan time = new System.TimeSpan();
+       // private TimeSpan time = new System.TimeSpan();
         public tsaxmagu()
         {
             InitializeComponent();
@@ -48,9 +48,9 @@ namespace WindowsFormsApplication2
         {
 
             //Se usa para validar el minuto actual 
-            System.Diagnostics.Debug.WriteLine("Minuto anterior: " + fecha.ToString("mm:ss") + "  Minuto actual: " + DateTime.Now.ToString("mm:ss"));
+            System.Diagnostics.Debug.WriteLine("Minuto anterior: " + fecha.ToString("mm") + "  Minuto actual: " + DateTime.Now.ToString("mm"));
 
-            if ((fecha + aumentoTiempo).ToString("mm:ss") == DateTime.Now.ToString("mm:ss"))
+            if ((fecha + aumentoTiempo).ToString("mm") == DateTime.Now.ToString("mm"))
             {
                 fecha = fecha + aumentoTiempo;
                 //MessageBox.Show("aqui voy");
@@ -114,8 +114,6 @@ namespace WindowsFormsApplication2
                 try
                 {
                     strBufferIn = accion;
-
-
                     //Aqui es donde se hara la separación de datos
 
                     System.Diagnostics.Debug.WriteLine(accion);
@@ -133,7 +131,7 @@ namespace WindowsFormsApplication2
                     spPuertoSerial.DiscardInBuffer();
 
                     Datos datosNuevos = new Datos();
-                      datosNuevos.Temp = temp;
+                    datosNuevos.Temp = temp;
                     datosNuevos.Lum = lum;
                     datosNuevos.Mov = mov;
                     datosNuevos.Fecha = DateTime.Now.ToShortDateString();
@@ -176,52 +174,8 @@ namespace WindowsFormsApplication2
 
         }
 
-        //Metodo para poder leer datos del serial 
-        private void PROYECTO_SERIAL_Load(object sender, EventArgs e)
-        {
-            strBufferIn = "";
-            strBufferOut = "";
-            btnConectar.Enabled = false;
-        }
-
         //Metodo  y acción para buscar los puertos disponibles en la pc 
-        private void btnBuscar_Puertos_Click(object sender, EventArgs e)
-        {
-            // en un arreglo se guardarn los datos disponobles 
-            string[] PuertosDisponibles = SerialPort.GetPortNames();
-            cmbPuertos.Items.Clear();
-
-            foreach (string puerto in PuertosDisponibles)
-            {
-                // en el combo box puertos 
-                // se guardaran los puertos disponibles 
-                cmbPuertos.Items.Add(puerto);
-
-            }
-            //si el cmbPuertos es mayor que 0 se mostrará  el siguiente mensaje 
-            if (cmbPuertos.Items.Count > 0)
-            {
-                cmbPuertos.SelectedIndex = 0;
-                //-------------------------------Mensaje para seleccionar el puerto 
-                // Esto nos indica que el metodo para encontrar los seriales esta funcionando 
-                MessageBox.Show("Seleccionar el puerto");
-
-                btnConectar.Enabled = true;
-                //------------------------------------------------------------------------------
-            }
-            //si no se encuentra ningun puerto pasara al siguiente else 
-            else
-            {
-                MessageBox.Show("Ningun puerto seleccionado");
-                cmbPuertos.Items.Clear();
-                cmbPuertos.Text = "                       ";
-                strBufferIn = "";
-                strBufferOut = "";
-                btnConectar.Enabled = false;
-            }
-            /*--------------TERMINAN LOS METODOS*/
-
-        }
+      
 
         private void btnBuscar_Puertos_Click_1(object sender, EventArgs e)
         {
@@ -271,6 +225,7 @@ namespace WindowsFormsApplication2
                 if (btnConectar.Text == "CONECTAR")
                 {
                     System.Diagnostics.Debug.WriteLine("1");
+                   
                     //datos para poder conectar con el serial 
                     spPuertoSerial.BaudRate = 9600;
                     spPuertoSerial.DataBits = 8;
@@ -290,7 +245,7 @@ namespace WindowsFormsApplication2
                         spPuertoSerial.DiscardOutBuffer();
 
                         strBufferIn = "";
-                        strBufferOut = "";
+                        strBufferOut = "1";
                         /*
                          * Cuando se conecte al serial 
                          * este mandara un dato de 
@@ -332,9 +287,10 @@ namespace WindowsFormsApplication2
         {
             try
             {
-                Thread.Sleep(5000);
+                Thread.Sleep(2000);
                 string dato = spPuertoSerial.ReadExisting();
                 AccesoInterrupcion(dato);
+                System.Diagnostics.Debug.WriteLine(strBufferIn);
             }
 
             catch (Exception ec)
@@ -356,9 +312,8 @@ namespace WindowsFormsApplication2
                     //spPuertoSerial.DiscardInBuffer();
                     //spPuertoSerial.DiscardOutBuffer();
                     spPuertoSerial.Write("1");
-                    Thread.Sleep(1000);
+                    Thread.Sleep(9000);
                     System.Diagnostics.Debug.WriteLine(strBufferOut);
-
                     spPuertoSerial.DiscardOutBuffer();
 
                 }
@@ -393,6 +348,13 @@ namespace WindowsFormsApplication2
         private void lblTiempo_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void tsaxmagu_Load(object sender, EventArgs e)
+        {
+            strBufferIn = "";
+            strBufferOut = "";
+            btnConectar.Enabled = false;
         }
 
     }
